@@ -1,13 +1,10 @@
 import React, { Component } from 'react';
 import { withStyles } from '@material-ui/core/styles';
-import { Typography, Button, CircularProgress, Paper } from '@material-ui/core';
+import { Typography, CircularProgress, Paper } from '@material-ui/core';
 import CloseIcon from '@material-ui/icons/Close';
-
 import { Web3ReactProvider, useWeb3React } from '@web3-react/core';
 import { Web3Provider } from '@ethersproject/providers';
-
 import { ERROR, CONNECTION_DISCONNECTED, CONNECTION_CONNECTED, CONFIGURE } from '../../stores/constants';
-
 import stores from '../../stores';
 
 const styles = (theme) => ({
@@ -137,17 +134,6 @@ function onConnectionClicked(currentConnector, name, setActivatingConnector, act
   const connectorsByName = stores.accountStore.getStore('connectorsByName');
   setActivatingConnector(currentConnector);
   activate(connectorsByName[name]);
-}
-
-function onDeactivateClicked(deactivate, connector) {
-  if (deactivate) {
-    deactivate();
-  }
-  if (connector && connector.close) {
-    connector.close();
-  }
-  stores.accountStore.setStore({ account: {}, web3context: null });
-  stores.emitter.emit(CONNECTION_DISCONNECTED);
 }
 
 function MyComponent(props) {
@@ -284,7 +270,6 @@ function MyComponent(props) {
                   alt=""
                 />
                 <Typography style={{
-                  font: 'normal normal bold 18px/21px Inter !important',
                   letterSpacing: '-0.36px',
                   fontFamily: 'Inter',
                   fontWeight: 'bold',
@@ -293,7 +278,6 @@ function MyComponent(props) {
                   marginBottom: '10px',
                 }}>{display}</Typography>
                 <Typography style={{
-                  font: 'normal normal 300 13px/16px Inter !important',
                   fontFamily: 'Inter',
                   fontWeight: '300',
                   fontSize: '13px',

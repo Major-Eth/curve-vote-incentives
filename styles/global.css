@@ -1,26 +1,76 @@
-html,
-body {
-  padding: 0;
-  margin: 0;
-  font-family: -apple-system, BlinkMacSystemFont, Segoe UI, Roboto, Oxygen,
-    Ubuntu, Cantarell, Fira Sans, Droid Sans, Helvetica Neue, sans-serif;
-  line-height: 1.6;
-  font-size: 18px;
-}
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
 
 * {
-  box-sizing: border-box;
+	@apply scroll-smooth font-roboto !important;
 }
 
-a {
-  color: inherit;
-  text-decoration: none;
+html {
+	margin-left: calc(100vw - 100%);
+	background: #F4F7FB;
 }
 
-a:hover {
-  text-decoration: underline;
+html.dark {
+	margin-left: calc(100vw - 100%);
+	background: #0f172a;
 }
 
-img {
-  display: block;
+#__next {
+	@apply w-full h-full
+}
+
+
+::placeholder,
+:-ms-input-placeholder,
+::-ms-input-placeholder {
+	color: #C5C6C7 !important;
+}
+
+.scrollbar-none::-webkit-scrollbar {
+    display: none;
+}
+.scrollbar-none {
+    -ms-overflow-style: none;  /* IE and Edge */
+    scrollbar-width: none;  /* Firefox */
+}
+
+
+.flex-center {
+	@apply justify-center items-center;
+}
+
+.text-start {
+	text-align: start;
+	text-align: left;
+}
+
+
+button {
+	@apply cursor-pointer
+}
+
+button:disabled {
+	@apply cursor-not-allowed
+}
+
+
+/* Size of buttons */
+.button {
+	@apply w-55 px-2 py-2 rounded-sm text-base text-center transition-colors
+}
+
+/* Color style of buttons */
+.button-filled {
+	@apply font-bold text-yearn-blue bg-white hover:bg-white/80 rounded-lg
+}
+.button-filled-alt {
+	@apply font-bold text-white bg-yearn-blue hover:bg-yearn-blue-dark rounded-lg
+}
+.button-filled-alt:disabled {
+	@apply font-bold text-white bg-yearn-blue-dark rounded-lg
+}
+
+.withBackgroundImage {
+	background-image: radial-gradient(circle, #435798, #374881, #2c3a6b, #212d55, #162041);
 }

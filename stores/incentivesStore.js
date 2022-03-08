@@ -5,7 +5,6 @@ import {
   ERROR,
   TX_SUBMITTED,
   STORE_UPDATED,
-  INCENTIVES_UPDATED,
   CONFIGURE_INCENTIVES,
   INCENTIVES_CONFIGURED,
   GET_INCENTIVES_BALANCES,
@@ -25,17 +24,9 @@ import {
   ADD_VOTE_REWARD,
   ADD_VOTE_REWARD_RETURNED
 } from './constants';
-import { NextRouter } from 'next/router'
-
-
-import { ERC20_ABI, BRIBERY_ABI, GAUGE_CONTROLLER_ABI, GAUGE_CONTRACT_ABI, VOTE_SOURCE_ABI, VOTE_BRIBERY_ABI } from './abis';
-
-
-import stores from './';
-import { bnDec } from '../utils';
+import { ERC20_ABI, BRIBERY_ABI, GAUGE_CONTROLLER_ABI, GAUGE_CONTRACT_ABI, VOTE_SOURCE_ABI, VOTE_BRIBERY_ABI } from 'stores/abis';
+import stores from 'stores/accountStore';
 import BigNumber from 'bignumber.js';
-
-const fetch = require('node-fetch');
 
 class Store {
   constructor(dispatcher, emitter) {

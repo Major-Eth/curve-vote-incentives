@@ -1,88 +1,62 @@
-import React, { useState, useEffect } from 'react';
-import PropTypes from 'prop-types';
-import Head from 'next/head';
-import { ThemeProvider } from '@material-ui/core/styles';
-import CssBaseline from '@material-ui/core/CssBaseline';
-import { useRouter } from 'next/router';
+import  React       		from	'react';
+import  Head				from	'next/head';
+import	{ethers}			from	'ethers';
+import	{Web3ReactProvider}	from	'@web3-react/core';
+import	{Web3ContextApp}	from	'contexts/useWeb3';
+import	{RewardsContextApp}	from	'contexts/useRewards';
+import 'styles/global.css';
 
-import '../styles/global.css'
 
-import lightTheme from '../theme/light';
-import darkTheme from '../theme/dark';
+function AppWrapper(props) {
+	const	{Component, pageProps} = props;
 
-import Configure from './configure';
-import ShutdownNotice from '../components/shutdownNotice'
-
-import stores from '../stores/index.js';
-
-import { CONFIGURE, CONFIGURE_RETURNED } from '../stores/constants';
-
-export default function MyApp({ Component, pageProps }) {
-  const router = useRouter();
-
-  const [themeConfig, setThemeConfig] = useState(lightTheme);
-  const [configured, setConfigured] = useState(false);
-
-  useEffect(() => {
-    const jssStyles = document.querySelector('#jss-server-side');
-    if (jssStyles) {
-      jssStyles.parentElement.removeChild(jssStyles);
-    }
-  }, []);
-
-  const changeTheme = (dark) => {
-    setThemeConfig(dark ? darkTheme : lightTheme);
-    localStorage.setItem('yearn.finance-dark-mode', dark ? 'dark' : 'light');
-  };
-
-  const configureReturned = () => {
-    setConfigured(true);
-  };
-
-  useEffect(function () {
-    const localStorageDarkMode = window.localStorage.getItem('yearn.finance-dark-mode');
-    changeTheme(localStorageDarkMode ? localStorageDarkMode === 'dark' : false);
-  }, []);
-
-  useEffect(function () {
-    stores.emitter.on(CONFIGURE_RETURNED, configureReturned);
-    stores.dispatcher.dispatch({ type: CONFIGURE });
-
-    return () => {
-      stores.emitter.removeListener(CONFIGURE_RETURNED, configureReturned);
-    };
-  }, []);
-
-  const validateConfigured = () => {
-    return true
-    return configured
-  };
-
-  const [shutdownNoticeOpen, setShutdownNoticeOpen] = useState(true);
-  const closeShutdown = () => {
-    setShutdownNoticeOpen(false)
-  }
-
-  return (
-    <React.Fragment>
-      <Head>
-        <title>bribe.crv.finance</title>
-        <meta name="viewport" content="minimum-scale=1, initial-scale=1, width=device-width" />
-      </Head>
-      <ThemeProvider theme={themeConfig}>
-        {/* CssBaseline kickstart an elegant, consistent, and simple baseline to build upon. */}
-        <CssBaseline />
-        {validateConfigured() && <Component {...pageProps} changeTheme={changeTheme} />}
-        {!validateConfigured() && <Configure {...pageProps} />}
-        { shutdownNoticeOpen &&
-          <ShutdownNotice close={ closeShutdown } />
-        }
-      </ThemeProvider>
-    </React.Fragment>
-  );
+	return (
+		<React.Fragment>
+			<Head>
+				<title>{'bribe.crv.finance'}</title>
+				<meta name={'viewport'} content={'minimum-scale=1, initial-scale=1, width=device-width'} />
+				<link rel={'icon'} href={'/favicon.jpg'} />
+				<meta name={'description'} content={'bribe.crv.finance'} />
+				<meta name={'og:title'} content={'bribe.crv.finance'} />
+				<meta name={'twitter:card'} content={'summary_large_image'} />
+				<link rel={'preconnect'} href={'https://fonts.googleapis.com'} />
+				<link rel={'preconnect'} href={'https://fonts.gstatic.com'} crossOrigin={'true'} />
+				<link href={'https://fonts.googleapis.com/css2?family=Roboto:wght@300;400;600;700&display=swap'} rel={'stylesheet'} />
+				<meta name={'robots'} content={'index,nofollow'} />
+				<meta name={'googlebot'} content={'index,nofollow'} />
+			</Head>
+			<main id={'app'}>
+				<Web3ReactProvider getLibrary={getLibrary}>
+					<Component
+						element={props.element}
+						router={props.router}
+						{...pageProps} />
+				</Web3ReactProvider>
+			</main>
+		</React.Fragment>
+	);
 }
 
-MyApp.propTypes = {
-  Component: PropTypes.elementType.isRequired,
-  pageProps: PropTypes.object.isRequired,
+const getLibrary = (provider) => {
+	return new ethers.providers.Web3Provider(provider, 'any');
 };
+
+function	MyApp(props) {
+	const	{Component, pageProps} = props;
+  
+	return (
+		<Web3ReactProvider getLibrary={getLibrary}>
+			<Web3ContextApp>
+				<RewardsContextApp>
+					<AppWrapper
+						Component={Component}
+						pageProps={pageProps}
+						element={props.element}
+						router={props.router} />
+				</RewardsContextApp>
+			</Web3ContextApp>
+		</Web3ReactProvider>
+	);
+}
+
+export default MyApp;

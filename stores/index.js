@@ -11,8 +11,8 @@ const accountStore = new AccountStore(dispatcher, emitter);
 const incentivesStore = new IncentivesStore(dispatcher, emitter);
 
 export default {
-  accountStore: accountStore,
-  incentivesStore: incentivesStore,
-  dispatcher: dispatcher,
-  emitter: emitter,
+	accountStore: accountStore,
+	incentivesStore: incentivesStore,
+	dispatcher: dispatcher,
+	emitter: emitter,
 };
