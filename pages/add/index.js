@@ -1,204 +1,186 @@
-import React, {useState, useEffect} from 'react';
+import React, {useState} from 'react';
 import {useRouter} from 'next/router';
-import {Typography, Paper, Button, TextField, InputAdornment} from '@material-ui/core';
-import {withTheme, createTheme, ThemeProvider} from '@material-ui/core/styles';
+import Image from 'next/image';
 import Header from 'components/header';
-import SearchIcon from '@material-ui/icons/Search';
-import classes from './add.module.css';
-import stores from '../../stores/index.js';
-import {ACCOUNT_CHANGED, INCENTIVES_CONFIGURED} from '../../stores/constants';
+import useGauges from 'contexts/useGauges';
 
-const searchTheme = createTheme({
-	palette: {
-		type: 'light',
-		primary: {
-			main: '#2F80ED',
-		},
-	},
-	shape: {
-		borderRadius: '16px'
-	},
-	typography: {
-		fontFamily: [
-			'Inter',
-			'Arial',
-			'-apple-system',
-			'BlinkMacSystemFont',
-			'"Segoe UI"',
-			'Roboto',
-			'"Helvetica Neue"',
-			'sans-serif',
-			'"Apple Color Emoji"',
-			'"Segoe UI Emoji"',
-			'"Segoe UI Symbol"',
-		].join(','),
-		body1: {
-			fontSize: '12px'
-		}
-	},
-	overrides: {
-		MuiPaper: {
-			elevation1: {
-				'box-shadow': '0px 7px 7px #0000000A;',
-				'-webkit-box-shadow': '0px 7px 7px #0000000A;',
-				'-moz-box-shadow': '0px 7px 7px #0000000A;',
+function NetworkIcon({network}) {
+	if (network === 'Ethereum') {
+		return <Image src={'/network_eth.png'} width={40} height={40} />;
+	} else if (network === 'Fantom') {
+		return <Image src={'/network_ftm.svg'} width={40} height={40} />;
+	} else if (network === 'Gnosis Chain (xDai)') {
+		return <Image src={'/network_gnosis.png'} width={40} height={40} />;
+	} else if (network === 'Polygon') {
+		return <Image src={'/network_polygon.svg'} width={40} height={40} />;
+	}
+	return (
+		<div
+			className={
+				'w-10 h-10 bg-gray-blue-3 rounded-full border border-gray-blue-2'
 			}
-		},
-		MuiInputBase: {
-			input: {
-				fontSize: '14px'
-			},
-		},
-		MuiOutlinedInput: {
-			input: {
-				padding: '34px 50px'
-			},
-			notchedOutline: {
-				borderColor: 'transparent',
-			},
-			adornedEnd: {
-				paddingRight: '40px'
-			},
-			adornedStart: {
-				paddingLeft: '40px'
-			}
-		},
-	},
-});
+		/>
+	);
+}
 
-function Voting({changeTheme, theme}) {
+function Voting() {
 	const router = useRouter();
-	const [, setAccount] = useState(null);
+	const {gauges} = useGauges();
 	const [search, setSearch] = useState('');
-	const [gauges, setGauges] = useState([]);
-
-	useEffect(function () {
-		const accountChanged = () => {
-			setAccount(stores.accountStore.getStore('account'));
-		};
-
-		const configureReturned = () => {
-			setGauges(stores.incentivesStore.getStore('gauges'));
-		};
-
-		setAccount(stores.accountStore.getStore('account'));
-		stores.emitter.on(ACCOUNT_CHANGED, accountChanged);
-		stores.emitter.on(INCENTIVES_CONFIGURED, configureReturned);
-
-		setGauges(stores.incentivesStore.getStore('gauges'));
-
-		return () => {
-			stores.emitter.removeListener(ACCOUNT_CHANGED, accountChanged);
-			stores.emitter.removeListener(INCENTIVES_CONFIGURED, configureReturned);
-		};
-	}, []);
 
 	const onSearchChanged = (event) => {
 		setSearch(event.target.value);
 	};
 
-	const onChoose = (pool) => {
-		router.push(`/add/${pool.gaugeAddress}`);
-	};
-
-	const onBackClicked = () => {
-		router.push('/');
-	};
-
 	return (
-		<div className={ classes.container }>
-			<div className={ classes.headContainer }>
-				<div className={ classes.headContainerContent }>
-					<Header changeTheme={ changeTheme } variant={2} backClicked={ onBackClicked }/>
-					<Typography className={ classes.selectPool }>{'Select a Pool'}</Typography>
-					<Typography className={ classes.choosePool }>{'Choose a pool that you would like to offer rewards for below...'}</Typography>
-				</div>
-				<div className={ classes.searchField }>
-					<ThemeProvider theme={searchTheme}>
-						<Paper className={ classes.searchPaper }>
-							<TextField
-								fullWidth
-								className={ classes.searchContainer }
-								variant={'outlined'}
-								placeholder={'3Pool, IronBank'}
-								value={ search }
-								onChange={ onSearchChanged }
-								InputProps={{
-									endAdornment: <InputAdornment position={'end'}>
-										<SearchIcon fontSize={'medium'}  />
-									</InputAdornment>,
-									startAdornment: <InputAdornment position={'start'}>
-										<Typography className={ classes.searchInputAdnornment }>
-											{'Search Pools:'}
-										</Typography>
-									</InputAdornment>
-								}}
+		<div className={'flex flex-col w-full h-full'}>
+			<div
+				className={
+					'flex z-10 justify-between items-center w-full h-20 bg-white'
+				}
+			>
+				<Header>
+					<div className={'flex items-center mr-16 w-full'}>
+						<input
+							className={
+								'pl-6 mr-6 w-full h-20 text-lg text-gray-blue-1 focus:outline-none'
+							}
+							placeholder={
+								'Gauge Name, Address or LP Token Address (eg. 0x6b1754....1d0f)'
+							}
+							value={search}
+							onChange={onSearchChanged}
+						/>
+						<svg
+							className={'w-6 h-6 text-gray-blue-2'}
+							xmlns={'http://www.w3.org/2000/svg'}
+							viewBox={'0 0 512 512'}
+						>
+							<path
+								d={
+									'M504.1 471l-134-134C399.1 301.5 415.1 256.8 415.1 208c0-114.9-93.13-208-208-208S-.0002 93.13-.0002 208S93.12 416 207.1 416c48.79 0 93.55-16.91 129-45.04l134 134C475.7 509.7 481.9 512 488 512s12.28-2.344 16.97-7.031C514.3 495.6 514.3 480.4 504.1 471zM48 208c0-88.22 71.78-160 160-160s160 71.78 160 160s-71.78 160-160 160S48 296.2 48 208z'
+								}
+								fill={'currentColor'}
 							/>
-						</Paper>
-					</ThemeProvider>
-				</div>
-			</div>
-			<div className={ classes.tableContainer }>
-				<div className={ theme.palette.type === 'dark' ? classes.tableHeaderDark : classes.tableHeader }>
-					<div className={ classes.tableHeaderRow }>
-						<div className={ classes.poolRow }>
-							<Typography className={ `${classes.tableHeaderText} ${classes.poolHeaderText}` }>{'Pool'}</Typography>
-						</div>
-						<div className={ classes.typeRow }>
-							<Typography className={ classes.tableHeaderText }>{'Chain'}</Typography>
-						</div>
-						<div className={ classes.actionRow }>
-							<Typography className={ classes.tableHeaderText }>{'Action'}</Typography>
-						</div>
+						</svg>
 					</div>
-				</div>
-				<div className={ classes.tableBody }>
-					{
-						gauges && gauges.length > 0 && gauges.filter((gauge) => {
-							if(search) {
-								return (
-									gauge.name.toLowerCase().includes(search.toLowerCase()) ||
-										gauge.gaugeAddress.toLowerCase().includes(search.toLowerCase()) ||
-										gauge.lpTokenAddress.toLowerCase().includes(search.toLowerCase())
-								);
-							}
-							return true;
-						}).map((gauge) => {
-							let chainClass = classes.typeText;
-							if(gauge.gaugeTypeName === 'Fantom') {
-								chainClass = classes.typeTextFantom;
-							} else if(gauge.gaugeTypeName === 'Polygon') {
-								chainClass = classes.typeTextPolygon;
-							} else if(gauge.gaugeTypeName === 'xDAI') {
-								chainClass = classes.typeTextXDAI;
-							}
+				</Header>
+			</div>
 
-							return (
-								<div key={gauge.name} className={ classes.tableRow }>
-									<div className={ classes.poolRow }>
-										<img src={ gauge.logo } alt={''} width={'40px'} height={'40px'} className={ classes.assetIcon } />
-										<Typography className={ classes.nameText }>{gauge.name}</Typography>
+			<div
+				className={
+					'flex relative flex-col justify-center items-center pt-16 text-center'
+				}
+			>
+				<h2 className={'text-2xl font-bold text-dark-blue-1'}>
+					{'Select a Pool'}
+				</h2>
+				<p className={'text-base text-gray-blue-2'}>
+					{
+						'Choose a pool that you would like to offer rewards for below...'
+					}
+				</p>
+			</div>
+			<div className={'overflow-scroll pt-4 mt-6 w-full h-full'}>
+				<div className={'grid grid-cols-12 py-4 px-8'}>
+					<div className={'col-span-8'}>
+						<p className={'text-xs font-bold text-gray-blue-2'}>
+							{'Pool'}
+						</p>
+					</div>
+					<div className={'flex col-span-2 justify-center'}>
+						<p className={'text-xs font-bold text-gray-blue-2'}>
+							{'Chain'}
+						</p>
+					</div>
+					<div className={'flex col-span-2 justify-end'} />
+				</div>
+				<div className={'w-full'}>
+					{gauges &&
+						gauges.length > 0 &&
+						gauges
+							.filter((gauge) => {
+								if (search) {
+									return (
+										gauge.name
+											.toLowerCase()
+											.includes(search.toLowerCase()) ||
+										gauge.gaugeAddress
+											.toLowerCase()
+											.includes(search.toLowerCase()) ||
+										gauge.lpTokenAddress
+											.toLowerCase()
+											.includes(search.toLowerCase())
+									);
+								}
+								return true;
+							})
+							.map((gauge, index) => {
+								return (
+									<div
+										key={`${gauge.name}_${index}`}
+										className={`grid grid-cols-12 py-4 px-8 ${
+											index % 2
+												? 'bg-white-blue-2'
+												: 'bg-white'
+										}`}
+									>
+										<div
+											className={
+												'flex flex-row col-span-8 items-center'
+											}
+										>
+											<NetworkIcon
+												network={gauge.gaugeTypeName}
+											/>
+											<p
+												className={
+													'pl-4 text-base font-bold text-dark-blue-1'
+												}
+											>
+												{gauge.name}
+											</p>
+										</div>
+										<div
+											className={
+												'flex col-span-2 justify-center items-center'
+											}
+										>
+											<p
+												className={
+													'text-sm font-bold tracking-tight text-dark-blue-1'
+												}
+											>
+												{gauge.gaugeTypeName}
+											</p>
+										</div>
+										<div
+											className={
+												'flex col-span-2 justify-end'
+											}
+										>
+											<button
+												onClick={() =>
+													router.push(
+														`/add/${gauge.gaugeAddress}`
+													)
+												}
+												className={
+													'button button-outline'
+												}
+											>
+												<p className={'text-sm'}>
+													{'Choose Pool'}
+												</p>
+											</button>
+										</div>
 									</div>
-									<div className={ classes.typeRow }>
-										<Typography className={ chainClass }>{gauge.gaugeTypeName}</Typography>
-									</div>
-									<div className={ classes.actionRow }>
-										<Button
-											variant={'outlined'}
-											size={'small'}
-											color={'primary'}
-											onClick={ () => onChoose(gauge)}
-											className={ classes.chooseButton }>
-											<Typography className={ classes.buttonText }>{'Choose Pool'}</Typography>
-										</Button>
-									</div>
-								</div>
-							);
-						})}
+								);
+							})}
 				</div>
 			</div>
 		</div>
 	);
 }
 
-export default withTheme(Voting);
+export default Voting;

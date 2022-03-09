@@ -51,7 +51,7 @@ export default function RewardCard({reward}) {
 					{reward.rewardToken.symbol}
 				</p>
 				<p className={'pb-8 text-xs text-center text-gray-blue-1'}>
-					{`Your reward for voting for ${reward.gauge.name}`}
+					{`Your reward for voting for ${reward.vote.index}`}
 				</p>
 				{reward.hasClaimed && (
 					<button
@@ -86,16 +86,14 @@ export default function RewardCard({reward}) {
 					}
 				>
 					{formatCurrency(
-						(Number(reward.tokensForBribe) *
-							reward.gauge.votes.userVoteSlopePercent) /
-							100
+						reward.voterState === '1' ? reward.estimateBribe : 0
 					)}{' '}
 					{reward.rewardToken.symbol}
 				</p>
 				<p className={'text-xs text-center text-gray-blue-1'}>
-					{`100% vote for ${
-						reward.gauge.name
-					} gives you ${formatCurrency(reward.tokensForBribe)} ${
+					{`Yes vote for #${
+						reward.vote.index
+					} gives you ${formatCurrency(reward.estimateBribe)} ${
 						reward.rewardToken.symbol
 					}`}
 				</p>
@@ -104,12 +102,17 @@ export default function RewardCard({reward}) {
 						'py-8 mt-auto text-xs text-center text-gray-blue-1'
 					}
 				>
-					{`Unlocks ${moment.unix(reward.rewardsUnlock).fromNow()}`}
+					{`Unlocks ${moment
+						.unix(reward.vote.vote.startDate)
+						.add(1, 'w')
+						.fromNow()}`}
 				</p>
 				<button
 					className={'w-full button button-filled-alt'}
 					onClick={() =>
-						window.open('https://dao.curve.fi/gaugeweight')
+						window.open(
+							`https://dao.curve.fi/vote/ownership/${reward.vote.index}`
+						)
 					}
 				>
 					{'Cast Vote'}
@@ -129,7 +132,7 @@ export default function RewardCard({reward}) {
 				className={'p-2 text-white bg-[#0053FF] rounded-full shadow-sm'}
 				style={{width: 64, height: 64}}
 			/>
-			{Number(reward.claimable) > 0
+			{reward.voterState === 1 && reward.vote.vote.open !== true
 				? renderClaimable()
 				: renderAvailable()}
 		</div>

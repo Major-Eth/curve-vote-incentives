@@ -8,7 +8,7 @@
 
 html {
 	margin-left: calc(100vw - 100%);
-	background: #F4F7FB;
+	background: #f4f7fb;
 }
 
 html.dark {
@@ -17,24 +17,22 @@ html.dark {
 }
 
 #__next {
-	@apply w-full h-full
+	@apply w-full h-full;
 }
-
 
 ::placeholder,
 :-ms-input-placeholder,
 ::-ms-input-placeholder {
-	color: #C5C6C7 !important;
+	color: #c5c6c7 !important;
 }
 
 .scrollbar-none::-webkit-scrollbar {
-    display: none;
+	display: none;
 }
 .scrollbar-none {
-    -ms-overflow-style: none;  /* IE and Edge */
-    scrollbar-width: none;  /* Firefox */
+	-ms-overflow-style: none; /* IE and Edge */
+	scrollbar-width: none; /* Firefox */
 }
-
 
 .flex-center {
 	@apply justify-center items-center;
@@ -45,32 +43,39 @@ html.dark {
 	text-align: left;
 }
 
-
 button {
-	@apply cursor-pointer
+	@apply cursor-pointer;
 }
 
 button:disabled {
-	@apply cursor-not-allowed
+	@apply cursor-not-allowed;
 }
-
 
 /* Size of buttons */
 .button {
-	@apply w-55 px-2 py-2 rounded-sm text-base text-center transition-colors
+	@apply px-2 py-2 rounded-sm text-base text-center transition-colors;
 }
 
 /* Color style of buttons */
 .button-filled {
-	@apply font-bold text-yearn-blue bg-white hover:bg-white/80 rounded-lg
+	@apply font-bold text-yearn-blue bg-white hover:bg-white/80 rounded-lg;
 }
 .button-filled-alt {
-	@apply font-bold text-white bg-yearn-blue hover:bg-yearn-blue-dark rounded-lg
+	@apply font-bold text-white bg-yearn-blue hover:bg-yearn-blue-dark rounded-lg;
 }
 .button-filled-alt:disabled {
-	@apply font-bold text-white bg-yearn-blue-dark rounded-lg
+	@apply bg-white-blue-1 text-gray-blue-3 hover:bg-white-blue-1 font-bold rounded-lg;
 }
-
+.button-outline {
+	@apply font-bold text-yearn-blue border-yearn-blue border bg-white hover:bg-white/80 rounded-lg transition-colors hover:bg-yearn-blue hover:text-white;
+}
 .withBackgroundImage {
-	background-image: radial-gradient(circle, #435798, #374881, #2c3a6b, #212d55, #162041);
+	background-image: radial-gradient(
+		circle,
+		#435798,
+		#374881,
+		#2c3a6b,
+		#212d55,
+		#162041
+	);
 }

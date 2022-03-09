@@ -2,13 +2,10 @@ const defaultTheme = require('tailwindcss/defaultTheme');
 
 module.exports = {
 	corePlugins: {
-		ringColor: false,
+		ringColor: false
 	},
 	darkMode: 'class',
-	content: [
-		'./pages/**/*.js',
-		'./components/**/*.js'
-	],
+	content: ['./pages/**/*.js', './components/**/*.js'],
 	theme: {
 		fontFamily: {
 			roboto: [...defaultTheme.fontFamily.sans]
@@ -24,13 +21,16 @@ module.exports = {
 			'yearn-blue-light-1': '#C6D7F9',
 			'yearn-blue-light-2': '#E0EAFF',
 			'yearn-blue-dark': '#004ADF',
-			'white': '#FFFFFF',
+			white: '#FFFFFF',
 			'white-blue-1': '#F4F7FB',
-			'white-blue-2': '#F9FBFD',
+			'white-blue-2': '#F9FBFD'
 		},
 		extend: {
 			gridTemplateColumns: {
-				'22': 'repeat(22, minmax(0, 1fr))',
+				22: 'repeat(22, minmax(0, 1fr))'
+			},
+			screens: {
+				'3xl': '1792px'
 			},
 			width: {
 				33: '8.25rem',
@@ -38,14 +38,14 @@ module.exports = {
 				42: '10.5rem',
 				50: '12.5rem',
 				55: '13.75rem',
-				100: '25rem',
+				100: '25rem'
 			},
 			height: {
 				'table-wrapper': 'calc(100vh - 54px)',
 				102: '25.5rem',
 				106: '26.5rem',
 				136: '34rem',
-				'70vh': '70vh',
+				'70vh': '70vh'
 			},
 			minWidth: {
 				32: '8rem',
@@ -54,20 +54,17 @@ module.exports = {
 				40: '10rem'
 			},
 			maxWidth: {
-				'xl': '552px',
+				xl: '552px',
 				'4xl': '904px',
-				'6xl': '1200px',
+				'6xl': '1200px'
 			},
 			fontSize: {
-				'sm': ['12px', '16px'],
-				'base': ['16px', '24px'],
-				'lg': ['20px', '32px'],
-				'xl': ['24px', '32px'],
-			},
-		},
+				sm: ['12px', '16px'],
+				base: ['16px', '24px'],
+				lg: ['20px', '32px'],
+				xl: ['24px', '32px']
+			}
+		}
 	},
-	plugins: [
-		require('@tailwindcss/typography'),
-		require('@tailwindcss/forms')
-	],
+	plugins: [require('@tailwindcss/typography'), require('@tailwindcss/forms')]
 };

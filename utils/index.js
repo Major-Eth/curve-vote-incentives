@@ -1,11 +1,13 @@
-import	{ethers}		from	'ethers';
-import BigNumber from 'bignumber.js';
+import {ethers} from 'ethers';
+import {Provider} from 'ethcall';
 
 export function formatCurrency(amount, decimals = 2) {
 	if (!isNaN(amount)) {
-
-		if(BigNumber(amount).gt(0) && BigNumber(amount).lt(0.01)) {
-			return '< 0.01';
+		if (
+			ethers.BigNumber.from(amount).gt(0) &&
+			ethers.BigNumber.from(amount).lt(1)
+		) {
+			return '< 1';
 		}
 
 		const formatter = new Intl.NumberFormat(undefined, {
@@ -29,23 +31,19 @@ export function truncateAddress(address) {
 export function formatAddress(address, length = 'short') {
 	if (address && length === 'short') {
 		address =
-      address.substring(0, 6) +
-      '...' +
-      address.substring(address.length - 4, address.length);
+			address.substring(0, 6) +
+			'...' +
+			address.substring(address.length - 4, address.length);
 		return address;
 	} else if (address && length === 'long') {
 		address =
-      address.substring(0, 12) +
-      '...' +
-      address.substring(address.length - 8, address.length);
+			address.substring(0, 12) +
+			'...' +
+			address.substring(address.length - 8, address.length);
 		return address;
 	} else {
 		return null;
 	}
-}
-
-export function bnDec(decimals) {
-	return new BigNumber(10).pow(parseInt(decimals));
 }
 
 export function sqrt(value) {
@@ -77,12 +75,38 @@ export const toAddress = (address) => {
 		return ethers.constants.AddressZero;
 	}
 	try {
-		return ethers.utils.getAddress(address);	
+		return ethers.utils.getAddress(address);
 	} catch (error) {
 		return ethers.constants.AddressZero;
 	}
 };
 
 export const isAddress = (address) => {
-	return (toAddress(address) !== ethers.constants.AddressZero);
+	return toAddress(address) !== ethers.constants.AddressZero;
 };
+
+export async function newEthCallProvider(provider) {
+	const ethcallProvider = new Provider();
+	if (process.env.IS_TEST) {
+		try {
+			await ethcallProvider.init(
+				new ethers.providers.JsonRpcProvider('http://localhost:8545')
+			);
+			ethcallProvider.multicall = {
+				address: '0xeefba1e63905ef1d7acba5a8513c70307c1ce441'
+			};
+			ethcallProvider.multicall2 = {
+				address: '0x5ba1e12693dc8f9c48aad8770482f4739beed696'
+			};
+			return ethcallProvider;
+		} catch (error) {
+			console.warn(
+				'Could not connect to test provider, using mainnet provider'
+			);
+			await ethcallProvider.init(provider);
+			return ethcallProvider;
+		}
+	}
+	await ethcallProvider.init(provider);
+	return ethcallProvider;
+}
