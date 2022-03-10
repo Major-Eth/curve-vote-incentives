@@ -62,4 +62,4 @@ export const ADD_VOTE_REWARD_RETURNED = 'ADD_VOTE_REWARD_RETURNED';
 export const CLAIM_VOTE_REWARD = 'CLAIM_VOTE_REWARD';
 export const VOTE_REWARD_CLAIMED = 'VOTE_REWARD_CLAIMED';
 
-export const WEEK = ethers.BigNumber.from(86400).times(7).toFixed(0);
+export const WEEK = ethers.BigNumber.from(86400).mul(7);
