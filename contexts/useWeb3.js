@@ -9,6 +9,8 @@ import {FortmaticConnector} from '@web3-react/fortmatic-connector';
 import {PortisConnector} from '@web3-react/portis-connector';
 import useLocalStorage from 'hooks/useLocalStorage';
 import useClientEffect from 'hooks/useClientEffect';
+import useWindowInFocus from 'hooks/useWindowInFocus';
+import useDebounce from	'hooks/useDebounce';
 import {toAddress} from 'utils';
 import performBatchedUpdates from 'utils/performBatchedUpdates';
 
@@ -41,14 +43,36 @@ function getProvider(chain = 'ethereum') {
 }
 
 export const Web3ContextApp = ({children}) => {
-	const web3 = useWeb3React();
-	const {activate, active, library, account, chainId, deactivate} = web3;
-	const [ens, set_ens] = useLocalStorage('ens', '');
-	const [lastWallet, set_lastWallet] = useLocalStorage(
-		'lastWallet',
-		walletType.NONE
-	);
-	const [disconnected, set_disconnected] = useState(false);
+	const   web3 = useWeb3React();
+	const   {activate, active, library, account, chainId, deactivate} = web3;
+	const   [ens, set_ens] = useLocalStorage('ens', '');
+	const   [lastWallet, set_lastWallet] = useLocalStorage('lastWallet', walletType.NONE);
+	const   [disconnected, set_disconnected] = useState(false);
+	const	[disableAutoChainChange, set_disableAutoChainChange] = useState(false);
+	const	debouncedChainID = useDebounce(chainId, 500);
+	const	windowInFocus = useWindowInFocus();
+
+	const onSwitchChain = useCallback((force) => {
+		if (!force && (!active || disableAutoChainChange)) {
+			return;
+		}
+		const	isCompatibleChain = (Number(debouncedChainID) === 1 || Number(debouncedChainID) === 1337 || Number(debouncedChainID) === 31337);
+		if (isCompatibleChain) {
+			return;
+		}
+		if (!library || !active) {
+			console.error('Not initialized');
+			return;
+		}
+		library
+			.send('wallet_switchEthereumChain', [{chainId: '0x1'}])
+			.catch(() => set_disableAutoChainChange(true));
+	}, [active, disableAutoChainChange, debouncedChainID, library]);
+
+	React.useEffect(() => {
+		onSwitchChain();
+	}, [windowInFocus, onSwitchChain]);
+
 
 	/**************************************************************************
 	 **	connect
@@ -180,7 +204,6 @@ export const Web3ContextApp = ({children}) => {
 				active:
 					active &&
 					(Number(chainId) === 1 ||
-						Number(chainId) === 250 ||
 						Number(chainId) === 1337 ||
 						Number(chainId) === 31337),
 				provider: library,

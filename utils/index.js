@@ -3,12 +3,8 @@ import {Provider} from 'ethcall';
 
 export function formatCurrency(amount, decimals = 2) {
 	if (!isNaN(amount)) {
-		if (
-			ethers.BigNumber.from(amount).gt(0) &&
-			ethers.BigNumber.from(amount).lt(1)
-		) {
+		if (ethers.BigNumber.from(amount).gt(0) && ethers.BigNumber.from(amount).lt(1))
 			return '< 1';
-		}
 
 		const formatter = new Intl.NumberFormat(undefined, {
 			minimumFractionDigits: decimals,
@@ -16,9 +12,8 @@ export function formatCurrency(amount, decimals = 2) {
 		});
 
 		return formatter.format(amount);
-	} else {
-		return 0;
 	}
+	return 0;
 }
 
 export function truncateAddress(address) {

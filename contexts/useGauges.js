@@ -5,91 +5,9 @@ import useClientEffect from 'hooks/useClientEffect';
 import useWeb3 from 'contexts/useWeb3';
 import {newEthCallProvider, isAddress} from 'utils';
 import GAUGES_INFO from 'utils/gaugesInfo';
+import DEFAULT_TOKENS from 'utils/defaultsTokens';
 import * as CONST from 'utils/constants';
 import * as ABI from 'utils/abis';
-
-const DEFAULT_TOKENS = [
-	{
-		address: '0x4e15361fd6b4bb609fa63c81a2be19d873717870',
-		symbol: 'FTM',
-		decimals: 18
-	},
-	{
-		address: '0x2ba592f78db6436527729929aaf6c908497cb200',
-		symbol: 'CREAM',
-		decimals: 18
-	},
-	{
-		address: '0x090185f2135308bad17527004364ebcc2d37e5f6',
-		symbol: 'SPELL',
-		decimals: 18
-	},
-	{
-		address: '0x6b175474e89094c44da98b954eedeac495271d0f',
-		symbol: 'DAI',
-		decimals: 18
-	},
-	{
-		address: '0xa0b86991c6218b36c1d19d4a2e9eb0ce3606eb48',
-		symbol: 'USDC',
-		decimals: 6
-	},
-	{
-		address: '0x5a98fcbea516cf06857215779fd812ca3bef1b32',
-		symbol: 'LDO',
-		decimals: 18
-	},
-	{
-		address: '0xdbdb4d16eda451d0503b854cf79d55697f90c8df',
-		symbol: 'ALCX',
-		decimals: 18
-	},
-	{
-		address: '0x9D79d5B61De59D882ce90125b18F74af650acB93',
-		symbol: 'NSBT',
-		decimals: 6
-	},
-	{
-		address: '0x7d1afa7b718fb893db30a3abc0cfc608aacfebb0',
-		symbol: 'MATIC',
-		decimals: 18
-	},
-	{
-		address: '0x92e187a03b6cd19cb6af293ba17f2745fd2357d5',
-		symbol: 'DUCK',
-		decimals: 18
-	},
-	{
-		address: '0x8207c1FfC5B6804F6024322CcF34F29c3541Ae26',
-		symbol: 'OGN',
-		decimals: 18
-	},
-	{
-		address: '0xa3BeD4E1c75D00fa6f4E5E6922DB7261B5E9AcD2',
-		symbol: 'MTA',
-		decimals: 18
-	},
-	{
-		address: '0xd533a949740bb3306d119cc777fa900ba034cd52',
-		symbol: 'CRV',
-		decimals: 18
-	},
-	{
-		address: '0xcdf7028ceab81fa0c6971208e83fa7872994bee5',
-		symbol: 'T',
-		decimals: 18
-	},
-	{
-		address: '0xdb25f211ab05b1c97d595516f45794528a807ad8',
-		symbol: 'EURS',
-		decimals: 2
-	},
-	{
-		address: '0x31429d1856aD1377A8A0079410B297e1a9e214c2',
-		symbol: 'ANGLE',
-		decimals: 18
-	}
-];
 
 function _mapGaugeTypeToName(gaugeType) {
 	switch (gaugeType) {
@@ -111,7 +29,7 @@ function _mapGaugeTypeToName(gaugeType) {
 
 const GaugesContext = createContext();
 export const GaugesContextApp = ({children}) => {
-	const {provider, address, active} = useWeb3();
+	const {provider, getProvider, address, active} = useWeb3();
 	const [gauges, set_gauges] = useState(null);
 	const [votes, set_votes] = useState(null);
 	const [rewards, set_rewards] = useState([]);
@@ -128,31 +46,19 @@ export const GaugesContextApp = ({children}) => {
 				ABI.GAUGE_CONTROLLER_ABI
 			);
 			const ethcallProvider = await newEthCallProvider(_provider);
-			const [nGauges] = await ethcallProvider.tryAll([
-				gaugeController.n_gauges()
-			]);
+			const [nGauges] = await ethcallProvider.tryAll([gaugeController.n_gauges()]);
 			const numberOfGauges = nGauges.toNumber();
 
 			let calls = [];
 			for (let index = 0; index < numberOfGauges; index++) {
 				calls.push(gaugeController.gauges(index));
 			}
-			const gaugesAddressesCallResult = await ethcallProvider.tryAll(
-				calls
-			);
+			const gaugesAddressesCallResult = await ethcallProvider.tryAll(calls);
 
 			calls = [];
 			for (let index = 0; index < numberOfGauges; index++) {
-				calls.push(
-					gaugeController.gauge_types(
-						gaugesAddressesCallResult[index]
-					)
-				);
-				calls.push(
-					gaugeController.gauge_relative_weight(
-						gaugesAddressesCallResult[index]
-					)
-				);
+				calls.push(gaugeController.gauge_types(gaugesAddressesCallResult[index]));
+				calls.push(gaugeController.gauge_relative_weight(gaugesAddressesCallResult[index]));
 			}
 			const gaugesInfoCallResult = await ethcallProvider.tryAll(calls);
 
@@ -170,17 +76,9 @@ export const GaugesContextApp = ({children}) => {
 					lpTokenAddress = GAUGES_INFO[gaugeAddress].lpTokenAddress;
 				} else if ([0, 5, 6].includes(gaugeType.toNumber())) {
 					try {
-						const gauge = new ethers.Contract(
-							gaugeAddress,
-							['function lp_token() view returns (address)'],
-							_provider
-						);
+						const gauge = new ethers.Contract(gaugeAddress, ['function lp_token() view returns (address)'], _provider);
 						lpTokenAddress = await gauge.lp_token();
-						const lpToken = new ethers.Contract(
-							lpTokenAddress,
-							['function name() view returns (string)'],
-							_provider
-						);
+						const lpToken = new ethers.Contract(lpTokenAddress, ['function name() view returns (string)'], _provider);
 						name = await lpToken.name();
 					} catch (e) {
 						/**/
@@ -207,9 +105,9 @@ export const GaugesContextApp = ({children}) => {
 		}
 	}
 	React.useEffect(() => {
-		if (provider) _getGauges(provider);
+		_getGauges(getProvider());
 		// eslint-disable-next-line react-hooks/exhaustive-deps
-	}, [provider]);
+	}, []);
 
 	/**************************************************************************
 	 **	This part is used to retrieve the current votes for Curve. This is
@@ -257,9 +155,9 @@ export const GaugesContextApp = ({children}) => {
 		set_votes(result);
 	}
 	React.useEffect(() => {
-		if (provider) _getVotes(provider);
+		_getVotes(getProvider());
 		// eslint-disable-next-line react-hooks/exhaustive-deps
-	}, [provider]);
+	}, []);
 
 	/**************************************************************************
 	 **	This part is focused on retrieving the rewards informations for the
@@ -268,9 +166,7 @@ export const GaugesContextApp = ({children}) => {
 	async function _getCurrentGaugeVotes(_provider, _address, _gauges) {
 		const gaugeController = new ethers.Contract(
 			CONST.GAUGE_CONTROLLER_ADDRESS,
-			[
-				'function vote_user_slopes(address, address) public view returns (uint256 slope, uint256 power, uint256 end)'
-			],
+			['function vote_user_slopes(address, address) public view returns (uint256 slope, uint256 power, uint256 end)'],
 			_provider
 		);
 		const userVoteSlopes = await Promise.all(
