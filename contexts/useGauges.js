@@ -3,7 +3,7 @@ import {Contract} from 'ethcall';
 import {ethers} from 'ethers';
 import useClientEffect from 'hooks/useClientEffect';
 import useWeb3 from 'contexts/useWeb3';
-import {newEthCallProvider, isAddress} from 'utils';
+import {newEthCallProvider} from 'utils';
 import GAUGES_INFO from 'utils/gaugesInfo';
 import DEFAULT_TOKENS from 'utils/defaultsTokens';
 import * as CONST from 'utils/constants';
@@ -185,34 +185,6 @@ export const GaugesContextApp = ({children}) => {
 		return _gauges;
 	}
 
-	async function _getTokenInfo(_provider, _tokenAddress) {
-		try {
-			const token = new ethers.Contract(
-				_tokenAddress,
-				ABI.ERC20_ABI,
-				_provider
-			);
-			const [symbol, decimals, balance] = await Promise.all([
-				token.symbol(),
-				token.decimals(),
-				token.balanceOf(address)
-			]);
-
-			return {
-				address: _tokenAddress,
-				symbol,
-				decimals: parseInt(decimals),
-				balance
-			};
-		} catch (ex) {
-			console.log('------------------------------------');
-			console.log('exception thrown in _getTokenInfo()');
-			console.log(ex);
-			console.log('------------------------------------');
-			return ex;
-		}
-	}
-
 	// async function _getBribery(_provider, _address, _gauges, _rewardTokens, _rewardTokenAddress
 	async function _getBribery(_provider, _gauges) {
 		const briberies = [];
@@ -270,57 +242,6 @@ export const GaugesContextApp = ({children}) => {
 			}
 			
 		}
-
-
-		// for (let index = 0; index < DEFAULT_TOKENS.length; index++) {
-		// 	const token = DEFAULT_TOKENS[index];
-		// 	const bribery = await _getBribery(
-		// 		provider,
-		// 		address,
-		// 		_gauges,
-		// 		DEFAULT_TOKENS,
-		// 		token.address
-		// 	);
-		// 	briberies.push(bribery);
-		// }
-
-		// // const [gaugesPerRewardV2] = await ethcallProvider.tryAll([briberyV2.gauges_per_reward(_rewardTokenAddress)]);
-
-		// // For V2 call gauges_per_reward.
-		// // foreach of those, we get the user's reward only. no looping through dead gauges anymore.
-		// let briberyResultsPromisesV2 = [];
-		// if (gaugesPerRewardV2.length > 0) {
-		// 	briberyResultsPromisesV2 = gaugesPerRewardV2.map(async (gauge) => {
-		// 		const [
-		// 			activePeriod,
-		// 			claimable,
-		// 			lastUserClaim,
-		// 			tokensForBribe,
-		// 			rewardPerToken
-		// 		] = await ethcallProvider.tryAll([
-		// 			briberyV2.active_period(gauge, _rewardTokenAddress),
-		// 			briberyV2.claimable(_address, gauge, _rewardTokenAddress),
-		// 			briberyV2.last_user_claim(_address, gauge, _rewardTokenAddress),
-		// 			briberyTokensContract.tokens_for_bribe(_address, gauge, _rewardTokenAddress),
-		// 			briberyV2.reward_per_token(gauge, _rewardTokenAddress)
-		// 		]);
-
-		// 		return {
-		// 			version: 2,
-		// 			claimable,
-		// 			lastUserClaim,
-		// 			activePeriod,
-		// 			tokensForBribe,
-		// 			rewardPerToken,
-		// 			canClaim: ethers.BigNumber.from(block).lt(ethers.BigNumber.from(activePeriod).add(CONST.WEEK)),
-		// 			hasClaimed: ethers.BigNumber.from(lastUserClaim).eq(activePeriod),
-		// 			gauge: _gauges.filter(g => g.gaugeAddress.toLowerCase() === gauge.toLowerCase())[0],
-		// 			rewardToken: _rewardTokens.filter(r => r.address.toLowerCase() === _rewardTokenAddress.toLowerCase())[0]
-		// 		};
-		// 	});
-		// }
-
-		// const briberyResultsV2 = await Promise.all(briberyResultsPromisesV2);
 		return briberies;
 	}
 
@@ -360,76 +281,60 @@ export const GaugesContextApp = ({children}) => {
 			return null;
 		}
 
-		const voteBriberyContract = new ethers.Contract(
-			CONST.VOTE_BRIBERY_ADDRESS,
-			ABI.VOTE_BRIBERY_ABI
-		);
-		const votesSourceContract = new ethers.Contract(
-			CONST.VOTE_SOURCE_ADDRESS,
-			ABI.VOTE_SOURCE_ABI
-		);
+		const voteBriberyContract = new Contract(CONST.VOTE_BRIBERY_ADDRESS, ABI.VOTE_BRIBERY_ABI);
+		const votesSourceContract = new Contract(CONST.VOTE_SOURCE_ADDRESS, ABI.VOTE_SOURCE_ABI);
+		const ethcallProvider = await newEthCallProvider(provider);
 
 		const res = [];
 		for (let index = 0; index < votes.length; index++) {
 			const vote = votes[index];
-
 			if (!vote.rewardsPerVote || vote.rewardsPerVote.length === 0) {
 				continue;
 			}
+			const _rewards = [];
+			const calls = [];
 
-			const _rewards = await Promise.all(
-				vote.rewardsPerVote.map(async (rewardTokenAddress) => {
-					const [
-						estimateBribe,
-						rewardAmount,
-						voterState,
-						hsaClaimed
-					] = await Promise.all([
-						voteBriberyContract.estimate_bribe(
-							vote.index,
-							rewardTokenAddress,
-							address
-						),
-						voteBriberyContract.reward_amount(
-							vote.index,
-							rewardTokenAddress
-						),
-						votesSourceContract.getVoterState(vote.index, address),
-						voteBriberyContract.has_claimed(
-							vote.index,
-							rewardTokenAddress,
-							address
-						)
-					]);
-					const rewardToken = await _getTokenInfo(
-						provider,
-						rewardTokenAddress
-					);
-					console.log({
-						estimateBribe,
-						rewardAmount,
-						voterState,
-						hsaClaimed
-					});
-					return {
-						estimateBribe: ethers.utils.formatUnits(
-							estimateBribe,
-							rewardToken.decimals
-						),
-						rewardAmount: ethers.utils.formatUnits(
-							rewardAmount,
-							rewardToken.decimals
-						),
-						voterState,
-						hsaClaimed,
-						vote,
-						rewardToken
-					};
-				})
-			);
-			res.push(_rewards);
+			for (let index = 0; index < (vote.rewardsPerVote).length; index++) {
+				const rewardTokenAddress = (vote.rewardsPerVote)[index];
+				const token = new Contract(rewardTokenAddress, ABI.ERC20_ABI);
+
+				calls.push(voteBriberyContract.estimate_bribe(vote.index, rewardTokenAddress, address));
+				calls.push(voteBriberyContract.reward_amount(vote.index, rewardTokenAddress));
+				calls.push(votesSourceContract.getVoterState(vote.index, address));
+				calls.push(voteBriberyContract.has_claimed(vote.index, rewardTokenAddress, address));
+				calls.push(token.symbol());
+				calls.push(token.decimals());
+				calls.push(token.balanceOf(address));
+			}
+			const results = await ethcallProvider.tryAll(calls);
+
+			let rIndex = 0;
+			for (let index = 0; index < (vote.rewardsPerVote).length; index++) {
+				const 	rewardTokenAddress = (vote.rewardsPerVote)[index];
+				const	estimateBribe = results[rIndex++];
+				const	rewardAmount = results[rIndex++];
+				const	voterState = results[rIndex++];
+				const	hsaClaimed = results[rIndex++];
+				const	symbol = results[rIndex++];
+				const	decimals = results[rIndex++];
+				const	balance = results[rIndex++];
+
+				_rewards.push({
+					estimateBribe: ethers.utils.formatUnits(estimateBribe, decimals.toNumber()),
+					rewardAmount: ethers.utils.formatUnits(rewardAmount, decimals.toNumber()),
+					voterState,
+					hsaClaimed,
+					vote,
+					rewardToken: {
+						address: rewardTokenAddress,
+						decimals: decimals.toNumber(),
+						symbol,
+						balance
+					}
+				});
+			}
 		}
-		set_voteRewards(res.filter((r) => r != null).flat());
+		set_voteRewards(res);
 	}
 
 	useClientEffect(() => {
