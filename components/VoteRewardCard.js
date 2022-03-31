@@ -2,11 +2,11 @@ import React, {useState} from 'react';
 import PieChartIcon from '@material-ui/icons/PieChart';
 import {ethers} from 'ethers';
 import * as moment from 'moment';
-import {formatCurrency} from 'utils';
+import {bigNumberAsAmount} from 'utils';
 import * as CONST from 'utils/constants';
 import useWeb3 from 'contexts/useWeb3';
 
-export default function RewardCard({reward}) {
+export default function VoteRewardCard({reward}) {
 	const {provider} = useWeb3();
 	const [claiming, setClaiming] = useState(false);
 
@@ -42,13 +42,8 @@ export default function RewardCard({reward}) {
 				<p className={'pt-8 text-xs text-gray-blue-1'}>
 					{'Amount claimable:'}
 				</p>
-				<p
-					className={
-						'my-3 text-3xl font-bold text-center text-dark-blue-1'
-					}
-				>
-					{formatCurrency(Number(reward.claimable))}{' '}
-					{reward.rewardToken.symbol}
+				<p className={'my-3 text-3xl font-bold text-center text-dark-blue-1'}>
+					{`${bigNumberAsAmount(reward.claimable, reward.decimals, 6, reward.rewardToken.symbol)}`}
 				</p>
 				<p className={'pb-8 text-xs text-center text-gray-blue-1'}>
 					{`Your reward for voting for ${reward.vote.index}`}
@@ -80,28 +75,13 @@ export default function RewardCard({reward}) {
 				<p className={'pt-8 text-xs text-gray-blue-1'}>
 					{'Current receive amount:'}
 				</p>
-				<p
-					className={
-						'my-3 text-3xl font-bold text-center text-dark-blue-1'
-					}
-				>
-					{formatCurrency(
-						reward.voterState === '1' ? reward.estimateBribe : 0
-					)}{' '}
-					{reward.rewardToken.symbol}
+				<p className={'my-3 text-3xl font-bold text-center text-dark-blue-1'}>
+					{bigNumberAsAmount(reward.voterState === '1' ? reward.estimateBribe : 0, reward.decimals, 6, reward.rewardToken.symbol)}
 				</p>
 				<p className={'text-xs text-center text-gray-blue-1'}>
-					{`Yes vote for #${
-						reward.vote.index
-					} gives you ${formatCurrency(reward.estimateBribe)} ${
-						reward.rewardToken.symbol
-					}`}
+					{`Yes vote for #${reward.vote.index} gives you ${bigNumberAsAmount(reward.estimateBribe, reward.decimals, 6, reward.rewardToken.symbol)}`}
 				</p>
-				<p
-					className={
-						'py-8 mt-auto text-xs text-center text-gray-blue-1'
-					}
-				>
+				<p className={'py-8 mt-auto text-xs text-center text-gray-blue-1'}>
 					{`Unlocks ${moment
 						.unix(reward.vote.vote.startDate)
 						.add(1, 'w')
@@ -109,12 +89,7 @@ export default function RewardCard({reward}) {
 				</p>
 				<button
 					className={'w-full button button-filled-alt'}
-					onClick={() =>
-						window.open(
-							`https://dao.curve.fi/vote/ownership/${reward.vote.index}`
-						)
-					}
-				>
+					onClick={() => window.open(`https://dao.curve.fi/vote/ownership/${reward.vote.index}`)}>
 					{'Cast Vote'}
 				</button>
 			</>

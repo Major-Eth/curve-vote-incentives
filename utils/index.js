@@ -56,13 +56,39 @@ export async function newEthCallProvider(provider) {
 			};
 			return ethcallProvider;
 		} catch (error) {
-			console.warn(
-				'Could not connect to test provider, using mainnet provider'
-			);
+			console.warn('Could not connect to test provider, using mainnet provider');
 			await ethcallProvider.init(provider);
 			return ethcallProvider;
 		}
 	}
 	await ethcallProvider.init(provider);
 	return ethcallProvider;
+}
+
+export function units(value, unitName) {
+	return (ethers.utils.formatUnits(value, unitName));
+}
+export function	bigNumberAsAmount(bnAmount = ethers.BigNumber.from(0), decimals = 18, decimalsToDisplay = 2, symbol = ''){
+	let		locale = 'fr-FR';
+	if (typeof(navigator) !== 'undefined')
+		locale = navigator.language || 'fr-FR';
+	
+	let	symbolWithPrefix = symbol;
+	if (symbol.length > 0 && symbol !== '%') {
+		symbolWithPrefix = ` ${symbol}`;
+	}
+
+	if (bnAmount.isZero()) {
+		return (`0${symbolWithPrefix}`);
+	} else if (bnAmount.eq(ethers.constants.MaxUint256)) {
+		return (`∞${symbolWithPrefix}`);
+	}
+
+	const	formatedAmount = units(bnAmount, decimals);
+	return (`${
+		new Intl.NumberFormat([locale, 'en-US'], {
+			minimumFractionDigits: 0,
+			maximumFractionDigits: decimalsToDisplay
+		}).format(Number(formatedAmount))
+	}${symbolWithPrefix}`);
 }

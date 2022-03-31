@@ -40,12 +40,12 @@ export const GaugesContextApp = ({children}) => {
 	 **	to a specific wallet but this is only possible with a mainnet provider
 	 **************************************************************************/
 	async function _getGauges(_provider) {
-		console.group('Get Gauges');
+		// console.group('Get Gauges');
 		const gaugeController = new Contract(CONST.GAUGE_CONTROLLER_ADDRESS, ABI.GAUGE_CONTROLLER_ABI);
 		const ethcallProvider = await newEthCallProvider(_provider);
 		const [nGauges] = await ethcallProvider.tryAll([gaugeController.n_gauges()]);
 		const numberOfGauges = nGauges.toNumber();
-		console.log(`numberOfGauges: ${numberOfGauges}. Fetching gauges addresses ...`);
+		// console.log(`numberOfGauges: ${numberOfGauges}. Fetching gauges addresses ...`);
 
 		let calls = [];
 		for (let index = 0; index < numberOfGauges; index++) {
@@ -53,14 +53,14 @@ export const GaugesContextApp = ({children}) => {
 		}
 		const gaugesAddressesCallResult = await ethcallProvider.tryAll(calls);
 
-		console.log('Gauges addresses Fetched! Fetching gauges type and weight ...');
+		// console.log('Gauges addresses Fetched! Fetching gauges type and weight ...');
 		calls = [];
 		for (let index = 0; index < numberOfGauges; index++) {
 			calls.push(gaugeController.gauge_types(gaugesAddressesCallResult[index]));
 			calls.push(gaugeController.gauge_relative_weight(gaugesAddressesCallResult[index]));
 		}
 		const gaugesInfoCallResult = await ethcallProvider.tryAll(calls);
-		console.log('Gauges type and weight fetched! Preparing structure ...');
+		// console.log('Gauges type and weight fetched! Preparing structure ...');
 
 		const result = [];
 		let rIndex = 0;
@@ -80,6 +80,7 @@ export const GaugesContextApp = ({children}) => {
 					lpTokenAddress = await gauge.lp_token();
 					const lpToken = new ethers.Contract(lpTokenAddress, ['function name() view returns (string)'], _provider);
 					name = await lpToken.name();
+					console.warn(`Missing data for gauge [${gaugeAddress}] in local registry: [${name}] -> [${lpTokenAddress}]`);
 				} catch (e) {
 					/**/
 				}
@@ -96,8 +97,8 @@ export const GaugesContextApp = ({children}) => {
 			};
 			result.push(gaugeInfo);
 		}
-		console.log('Gauges are initialized!');
-		console.groupEnd('Get Gauges');
+		// console.log('Gauges are initialized!');
+		// console.groupEnd('Get Gauges');
 		set_gauges(result.filter((g) => g !== null));
 	}
 	React.useEffect(() => {
@@ -110,13 +111,13 @@ export const GaugesContextApp = ({children}) => {
 	 **	only possible with a mainnet provider
 	 **************************************************************************/
 	async function _getVotes(_provider) {
-		console.group('Get Votes');
+		// console.group('Get Votes');
 		const votesSourceContract = new Contract(CONST.VOTE_SOURCE_ADDRESS, ABI.VOTE_SOURCE_ABI);
 		const votesBriberyContract = new Contract(CONST.VOTE_BRIBERY_ADDRESS, ABI.VOTE_BRIBERY_ABI);
 		const ethcallProvider = await newEthCallProvider(_provider);
 		const [nVotes] = await ethcallProvider.tryAll([votesSourceContract.votesLength()]);
 		const numberOfVotes = nVotes.toNumber();
-		console.log(`numberOfVotes: ${numberOfVotes}. Fetching votes info...`);
+		// console.log(`numberOfVotes: ${numberOfVotes}. Fetching votes info...`);
 
 
 		const calls = [];
@@ -125,7 +126,7 @@ export const GaugesContextApp = ({children}) => {
 			calls.push(votesBriberyContract.rewards_per_vote(index));
 		}
 		const callResult = await ethcallProvider.tryAll(calls);
-		console.log('Votes info fetched! Preparing structure ...');
+		// console.log('Votes info fetched! Preparing structure ...');
 
 		const result = [];
 		let rIndex = 0;
@@ -138,8 +139,8 @@ export const GaugesContextApp = ({children}) => {
 			result.push(voteInfo);
 		}
 		set_votes(result);
-		console.log('Votes are initialized!');
-		console.groupEnd('Get Votes');
+		// console.log('Votes are initialized!');
+		// console.groupEnd('Get Votes');
 	}
 	React.useEffect(() => {
 		_getVotes(getProvider());
@@ -249,13 +250,13 @@ export const GaugesContextApp = ({children}) => {
 		if (!gauges || gauges.length === 0) {
 			return null;
 		}
-		console.log('Before _getCurrentGaugeVotes');
+		// console.log('Before _getCurrentGaugeVotes');
 		const _gauges = await _getCurrentGaugeVotes(provider, address, gauges);
-		console.log('After _getCurrentGaugeVotes');
+		// console.log('After _getCurrentGaugeVotes');
 
-		console.log('Before _getBribery');
+		// console.log('Before _getBribery');
 		const	flatBriberies = await _getBribery(provider, _gauges);
-		console.log('After _getBribery');
+		// console.log('After _getBribery');
 
 		const rewards = [];
 		for (let j = 0; j < flatBriberies.length; j++) {
@@ -263,17 +264,18 @@ export const GaugesContextApp = ({children}) => {
 			rewards.push({
 				activePeriod: bribe.activePeriod,
 				rewardsUnlock: ethers.BigNumber.from(bribe.activePeriod).add(CONST.WEEK).toNumber().toFixed(0),
-				claimable: ethers.utils.formatUnits(bribe.claimable, bribe.rewardToken.decimals),
+				claimable: bribe.claimable,
 				canClaim: bribe.canClaim,
 				hasClaimed: bribe.hasClaimed,
 				gauge: bribe.gauge,
-				tokensForBribe: ethers.utils.formatUnits(bribe.tokensForBribe, bribe.rewardToken.decimals),
+				tokensForBribe: bribe.tokensForBribe,
 				rewardPerToken: bribe.rewardPerToken,
-				rewardToken: bribe.rewardToken
+				rewardToken: bribe.rewardToken,
+				decimals: bribe.rewardToken.decimals
 			});
 		}
 		set_rewards(rewards);
-		console.groupEnd('Get Rewards');
+		// console.groupEnd('Get Rewards');
 	}
 
 	async function getVoteRewards() {
@@ -320,11 +322,12 @@ export const GaugesContextApp = ({children}) => {
 				const	balance = results[rIndex++];
 
 				_rewards.push({
-					estimateBribe: ethers.utils.formatUnits(estimateBribe, decimals.toNumber()),
-					rewardAmount: ethers.utils.formatUnits(rewardAmount, decimals.toNumber()),
+					estimateBribe, //
+					rewardAmount, //
 					voterState,
 					hsaClaimed,
 					vote,
+					decimals: decimals.toNumber(),
 					rewardToken: {
 						address: rewardTokenAddress,
 						decimals: decimals.toNumber(),
@@ -333,13 +336,14 @@ export const GaugesContextApp = ({children}) => {
 					}
 				});
 			}
+			// console.log(_rewards);
 		}
 		set_voteRewards(res);
 	}
 
 	useClientEffect(() => {
 		if (!active) return;
-		console.group('Get Rewards');
+		// console.group('Get Rewards');
 		getRewards();
 		getVoteRewards();
 	}, [active, gauges]);

@@ -155,7 +155,9 @@ function Voting() {
 							<label className={'text-sm font-bold text-dark-blue-1'}>{'Total Reward Tokens On Offer:'}</label>
 							<div className={'flex flex-row items-center text-sm text-gray-blue-2'}>
 								<p>{'Available: '}</p>
-								<p className={'pl-1 font-bold cursor-pointer'} onClick={() => onRewardAmountChanged({target: {value: ethers.utils.formatUnits(rewardToken.balance, rewardToken.decimals)}})}>
+								<p
+									className={'pl-1 font-bold cursor-pointer'}
+									onClick={() => onRewardAmountChanged({target: {value: ethers.utils.formatUnits(rewardToken.balance, rewardToken.decimals)}})}>
 									{rewardToken && formatCurrency(ethers.utils.formatUnits(rewardToken?.balance, rewardToken?.decimals))}
 								</p>
 							</div>

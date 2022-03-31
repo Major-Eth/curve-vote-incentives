@@ -111,12 +111,12 @@ function Voting() {
 						<p className={'text-base text-dark-blue-1'}>{'Claimable Rewards:'}</p>
 						<div className={'grid grid-cols-3 gap-8 mt-4'}>
 							{
-								rewardsByType.claimable.map((reward, idx) => {
+								(rewardsByType.claimable || []).map((reward, idx) => {
 									return <RewardCard reward={ reward } key={ idx } />;
 								})
 							}
 							{
-								voteRewardsByType.map((reward, idx) => {
+								(voteRewardsByType.claimable || [])?.map((reward, idx) => {
 									return <VoteRewardCard reward={ reward } key={ idx } />;
 								})
 							}

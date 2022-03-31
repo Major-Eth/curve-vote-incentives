@@ -78,5 +78,10 @@
 		"address": "0x31429d1856aD1377A8A0079410B297e1a9e214c2",
 		"symbol": "ANGLE",
 		"decimals": 18
+	},
+	{
+		"address": "0x4e3FBD56CD56c3e72c1403e103b45Db9da5B9D2B",
+		"symbol": "CVX",
+		"decimals": 18
 	}
 ]

@@ -426,5 +426,17 @@
 	"0xfE1A3dD8b169fB5BF0D5dbFe813d956F39fF6310": {
 		"name": "Curve.fi fUSDT/DAI/USDC",
 		"lpTokenAddress": ""
+	},
+	"0xB5efA93d5D23642f970aF41a1ea9A26f19CbD2Eb": {
+		"name": "Curve.fi Factory BTC Metapool: pbtc",
+		"lpTokenAddress": "0xC9467E453620f16b57a34a770C6bceBECe002587"
+	},
+	"0x784342E983E9283A7108F20FcA21995534b3fE65": {
+		"name": "Curve.fi Factory Crypto Pool: SILO/FRAX",
+		"lpTokenAddress": "0x2302aaBe69e6E7A1b0Aa23aAC68fcCB8A4D2B460"
+	},
+	"0x95d16646311fDe101Eb9F897fE06AC881B7Db802": {
+		"name": "Curve.fi Factory Crypto Pool: STG/USDC",
+		"lpTokenAddress": "0xdf55670e27bE5cDE7228dD0A6849181891c9ebA1"
 	}
 }
