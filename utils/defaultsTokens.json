@@ -85,6 +85,11 @@
 		"decimals": 18
 	},
 	{
+		"address": "0x41d5d79431a913c4ae7d69a668ecdfe5ff9dfb68",
+		"symbol": "INV",
+		"decimals": 18
+	},
+	{
 		"address": "0x865377367054516e17014CcdED1e7d814EDC9ce4",
 		"symbol": "DOLA",
 		"decimals": 18
