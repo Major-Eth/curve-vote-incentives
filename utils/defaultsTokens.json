@@ -83,5 +83,10 @@
 		"address": "0x4e3FBD56CD56c3e72c1403e103b45Db9da5B9D2B",
 		"symbol": "CVX",
 		"decimals": 18
+	},
+	{
+		"address": "0x865377367054516e17014CcdED1e7d814EDC9ce4",
+		"symbol": "DOLA",
+		"decimals": 18
 	}
 ]
